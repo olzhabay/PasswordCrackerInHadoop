@@ -1,11 +1,11 @@
 package PasswordCracker;
 
-import java.io.IOException;
-
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+
+import java.io.IOException;
 
 public class CandidateRangeRecordReader extends RecordReader<Text, Text> {
     private String rangeBegin;
@@ -31,18 +31,21 @@ public class CandidateRangeRecordReader extends RecordReader<Text, Text> {
     public void initialize(InputSplit split, TaskAttemptContext context)
             throws IOException, InterruptedException {
         /** TODO **/
-        CandidateRangeInputSplit candidataRangeSplit = (CandidateRangeInputSplit) split;
-
+        CandidateRangeInputSplit candidateRangeSplit = (CandidateRangeInputSplit) split;
+        String[] array  = candidateRangeSplit.getInputRange().split("\\s");
+        rangeBegin = array[0];
+        rangeEnd = array[1];
     }
 
-    // Normally, this function in the RecordReader is called repeatedly to polulate the key and value objects for the mapper.
+    // Normally, this function in the RecordReader is called repeatedly to populate the key and value objects for the mapper.
     // and When the reader gets to the end of the stream, the next method false, and the map task completes.
     // But in our case, it is called only one.
 
     @Override
     public boolean nextKeyValue() throws IOException, InterruptedException {
         /** TODO **/
-
+        done = true;
+        return false;
     }
 
     @Override

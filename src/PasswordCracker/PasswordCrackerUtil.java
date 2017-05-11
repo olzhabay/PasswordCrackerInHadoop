@@ -44,8 +44,19 @@ public class PasswordCrackerUtil {
 
     public static String findPasswordInRange(long rangeBegin, long rangeEnd, String encryptedPassword, TerminationChecker checker)
             throws IOException {
-        /** TODO **/
-
+        int[] passwordIterator = new int[PASSWORD_LEN];
+        transformDecToBase36(rangeBegin, passwordIterator);
+        for (long iterator = rangeBegin; iterator <= rangeEnd; iterator++) {
+            if (checker.isTerminated()) return null;
+            String password = transformIntoStr(passwordIterator);
+            String hashedPassword = encrypt(password, getMessageDigest());
+            if (hashedPassword.equals(encryptedPassword)) {
+                checker.setTerminated();
+                return password;
+            }
+            getNextCandidate(passwordIterator);
+        }
+        return null;
     }
 
     /* ###  transformDecToBase36  ###
@@ -54,12 +65,19 @@ public class PasswordCrackerUtil {
     */
 
     private static void transformDecToBase36(long numInDec, int[] numArrayInBase36) {
-        /** TODO **/
-
+        for (int index = PASSWORD_LEN - 1; index >= 0; index--) {
+            numArrayInBase36[index] = (int) (numInDec % 36);
+            numInDec = numInDec / 36;
+        }
     }
 
     private static void getNextCandidate(int[] candidateChars) {
-        /** TODO **/
+        int reminder = 1;
+        for (int index = PASSWORD_LEN - 1; index >= 0; index--) {
+            candidateChars[index] += reminder;
+            reminder = candidateChars[index] / 36;
+            candidateChars[index] %= 36;
+        }
     }
 
     private static String transformIntoStr(int[] candidateChars) {

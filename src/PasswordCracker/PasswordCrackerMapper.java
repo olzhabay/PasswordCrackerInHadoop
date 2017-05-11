@@ -1,14 +1,14 @@
 package PasswordCracker;
 
-import static PasswordCracker.PasswordCrackerUtil.findPasswordInRange;
-
-import java.io.IOException;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+
+import java.io.IOException;
+
+import static PasswordCracker.PasswordCrackerUtil.findPasswordInRange;
 
 public class PasswordCrackerMapper
         extends Mapper<Text, Text, Text, Text> {
@@ -26,37 +26,55 @@ public class PasswordCrackerMapper
         TerminationChecker terminationChecker = new TerminationChecker(hdfs, flagFilename);
 
         /** TODO **/
-
-
+        long rangeBegin = Long.parseLong(key.toString());
+        long rangeEnd = Long.parseLong(value.toString());
 
         String encryptedPassword = conf.get("encryptedPassword");
         String password = findPasswordInRange(rangeBegin, rangeEnd, encryptedPassword, terminationChecker);
-
+        if (password != null) {
+            context.write(new Text(encryptedPassword), new Text(value));
+        }
     }
 }
 
 //  It is class for early termination.
-//  In this assignment, a particular file becomes an ealry termination signal.
+//  In this assignment, a particular file becomes an early termination signal.
 //  So, If a task find the original password, then the task creates a file using a function in this class.
 //  Therefore, tasks will determine whether the quit or not by checking presence of file.
 //  FileSystem class : refer to https://hadoop.apache.org/docs/r2.7.3/api/org/apache/hadoop/fs/FileSystem.html
 
 class TerminationChecker {
-    FileSystem fs;  
-    Path flagPath;
+    private FileSystem fs;
+    private Path flagPath;
+    private boolean isTerminated;
 
     TerminationChecker(FileSystem fs, String flagFilename) {
         this.fs = fs;
         this.flagPath = new Path(flagFilename);
+        new Thread(() -> {
+            try {
+                asyncTerminationChecker();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     public boolean isTerminated() throws IOException {
 	/** TODO **/
-	    return fs.exists(flagPath);
+	    return isTerminated;
     }
 
     public void setTerminated() throws IOException {
 	/** TODO **/
+	    isTerminated = true;
 	    fs.create(flagPath);
+    }
+
+    private void asyncTerminationChecker() throws IOException, InterruptedException {
+        while (!isTerminated) {
+            Thread.sleep(5000);
+            isTerminated = fs.exists(flagPath);
+        }
     }
 }

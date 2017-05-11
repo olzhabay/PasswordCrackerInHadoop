@@ -17,21 +17,14 @@
  */
 package PasswordCracker;
 
-import static PasswordCracker.PasswordCrackerUtil.TOTAL_PASSWORD_RANGE_SIZE;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.BlockLocation;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.InputFormat;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import static PasswordCracker.PasswordCrackerUtil.TOTAL_PASSWORD_RANGE_SIZE;
 
 public class CandidateRangeInputFormat extends InputFormat<Text, Text> {
     private List<InputSplit> splits;
@@ -51,8 +44,13 @@ public class CandidateRangeInputFormat extends InputFormat<Text, Text> {
         int numberOfSplit = job.getConfiguration().getInt("numberOfSplit", 1);    //get map_count
         long subRangeSize = (TOTAL_PASSWORD_RANGE_SIZE + numberOfSplit - 1) / numberOfSplit;
 
-        /** COMPLETE **/
-
+        /** TODO **/
+        for (int i = 0; i < numberOfSplit; i++) {
+            long subRangeStart = i * subRangeSize;
+            long subRangeEnd = (i+1) * subRangeSize;
+            CandidateRangeInputSplit split = new CandidateRangeInputSplit(subRangeStart + " " + subRangeEnd, TOTAL_PASSWORD_RANGE_SIZE, null);
+            splits.add(split);
+        }
         return splits;
     }
 }
