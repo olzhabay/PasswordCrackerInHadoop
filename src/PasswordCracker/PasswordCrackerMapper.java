@@ -51,6 +51,11 @@ class TerminationChecker {
     TerminationChecker(FileSystem fs, String flagFilename) {
         this.fs = fs;
         this.flagPath = new Path(flagFilename);
+        try {
+            fs.delete(flagPath, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         isTerminated = false;
         new Thread(new Runnable() {
             @Override
