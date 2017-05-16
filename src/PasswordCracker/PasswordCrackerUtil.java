@@ -44,6 +44,7 @@ public class PasswordCrackerUtil {
 
     public static String findPasswordInRange(long rangeBegin, long rangeEnd, String encryptedPassword, TerminationChecker checker)
             throws IOException {
+        System.out.println("DEBUG util: findPasswordInRange");
         int[] passwordIterator = new int[PASSWORD_LEN];
         transformDecToBase36(rangeBegin, passwordIterator);
         for (long iterator = rangeBegin; iterator <= rangeEnd; iterator++) {

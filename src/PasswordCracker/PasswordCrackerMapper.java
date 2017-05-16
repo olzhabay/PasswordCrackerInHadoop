@@ -8,8 +8,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 
-import static PasswordCracker.PasswordCrackerUtil.findPasswordInRange;
-
 public class PasswordCrackerMapper
         extends Mapper<Text, Text, Text, Text> {
 
@@ -17,22 +15,24 @@ public class PasswordCrackerMapper
     //  If it receive the original password, pass the original password to reducer. Otherwise is not.
     //  FileSystem class : refer to https://hadoop.apache.org/docs/r2.7.3/api/org/apache/hadoop/fs/FileSystem.html
 
+    @Override
     public void map(Text key, Text value, Context context)
             throws IOException, InterruptedException {
+        System.out.println("DEBUG mapper: start");
         Configuration conf = context.getConfiguration();
         String flagFilename = conf.get("terminationFlagFilename");
         FileSystem hdfs = FileSystem.get(conf);
 
         TerminationChecker terminationChecker = new TerminationChecker(hdfs, flagFilename);
 
-        /** TODO **/
         long rangeBegin = Long.parseLong(key.toString());
         long rangeEnd = Long.parseLong(value.toString());
-
+        System.out.println("DEBUG mapper: range " + rangeBegin + " " + rangeEnd);
         String encryptedPassword = conf.get("encryptedPassword");
-        String password = findPasswordInRange(rangeBegin, rangeEnd, encryptedPassword, terminationChecker);
+        String password = PasswordCrackerUtil.findPasswordInRange(rangeBegin, rangeEnd, encryptedPassword, terminationChecker);
+        System.out.println("DEBUG mapper: password " + password);
         if (password != null) {
-            context.write(new Text(encryptedPassword), new Text(value));
+            context.write(new Text(encryptedPassword), new Text(password));
         }
     }
 }
@@ -51,22 +51,24 @@ class TerminationChecker {
     TerminationChecker(FileSystem fs, String flagFilename) {
         this.fs = fs;
         this.flagPath = new Path(flagFilename);
-        new Thread(() -> {
-            try {
-                asyncTerminationChecker();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+        isTerminated = false;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    asyncTerminationChecker();
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }
 
     public boolean isTerminated() throws IOException {
-	/** TODO **/
 	    return isTerminated;
     }
 
     public void setTerminated() throws IOException {
-	/** TODO **/
 	    isTerminated = true;
 	    fs.create(flagPath);
     }

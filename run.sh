@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 OUTPUT_PATH=$1
 ENCRYPTED_PASSWORD=$2
 NUMBER_OF_SPLIT=$3

@@ -18,11 +18,13 @@ public class CandidateRangeRecordReader extends RecordReader<Text, Text> {
 
     @Override
     public Text getCurrentKey() throws IOException, InterruptedException {
+        System.out.println("DEBUG reader: getting key");
         return new Text(rangeBegin);
     }
 
     @Override
     public Text getCurrentValue() throws IOException, InterruptedException {
+        System.out.println("DEBUG reader: getting value");
         return new Text(rangeEnd);
     }
 
@@ -30,11 +32,11 @@ public class CandidateRangeRecordReader extends RecordReader<Text, Text> {
     @Override
     public void initialize(InputSplit split, TaskAttemptContext context)
             throws IOException, InterruptedException {
-        /** TODO **/
         CandidateRangeInputSplit candidateRangeSplit = (CandidateRangeInputSplit) split;
         String[] array  = candidateRangeSplit.getInputRange().split("\\s");
         rangeBegin = array[0];
         rangeEnd = array[1];
+        System.out.println("DEBUG reader: " + rangeBegin + " " + rangeEnd);
     }
 
     // Normally, this function in the RecordReader is called repeatedly to populate the key and value objects for the mapper.
@@ -43,9 +45,12 @@ public class CandidateRangeRecordReader extends RecordReader<Text, Text> {
 
     @Override
     public boolean nextKeyValue() throws IOException, InterruptedException {
-        /** TODO **/
-        done = true;
-        return false;
+        if (done)
+            return false;
+        else {
+            done = true;
+            return true;
+        }
     }
 
     @Override

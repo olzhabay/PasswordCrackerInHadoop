@@ -44,7 +44,6 @@ public class CandidateRangeInputFormat extends InputFormat<Text, Text> {
         int numberOfSplit = job.getConfiguration().getInt("numberOfSplit", 1);    //get map_count
         long subRangeSize = (TOTAL_PASSWORD_RANGE_SIZE + numberOfSplit - 1) / numberOfSplit;
 
-        /** TODO **/
         for (int i = 0; i < numberOfSplit; i++) {
             long subRangeStart = i * subRangeSize;
             long subRangeEnd = (i+1) * subRangeSize;
